@@ -32,6 +32,7 @@ export async function generatePlan(goal: string, apiKey: string, model: string =
     config: {
       systemInstruction: `You are CORTEX, a Universal Autonomous AI Agent and High-Precision Execution System.
       Your mission is to execute ANY complex task provided by the user with 100% accuracy and robotic precision.
+      Capabilities include: Web Extraction, Code Generation, Desktop Automation, System File Sorting, and Deep Data Synthesis.
       
       STRICT EXECUTION PIPELINE (MANDATORY):
       STEP 1: ARCHITECTURE DESIGN - Design the technical blueprint for the mission.
@@ -122,6 +123,7 @@ export async function executeMission(goal: string, plan: AgentPlan, apiKey: stri
     config: {
       systemInstruction: `You are CORTEX, a High-Precision Execution System. 
       Execute the mission and provide the final structured intelligence in JSON format.
+      If the mission involves Desktop Sorting, provide a virtual directory structure mapping in the intelligence_output.
       
       JSON OUTPUT FORMAT (STRICT):
       {

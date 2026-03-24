@@ -1,5 +1,5 @@
 {
   "name": "CORTEX: Universal AI Computer",
   "description": "A fully autonomous AI agent system capable of web extraction, website building, desktop sorting, and any complex mission with multi-API routing.",
-  "requestFramePermissions": []
+  "requestFramePermissions": ["microphone"]
 }

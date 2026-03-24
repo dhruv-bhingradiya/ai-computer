@@ -24,8 +24,18 @@ import {
   Network,
   Workflow,
   BrainCircuit,
-  FileJson
+  FileJson,
+  Monitor,
+  Folder,
+  File,
+  HardDrive,
+  Mic,
+  Lock,
+  Unlock,
+  Volume2,
+  VolumeX
 } from 'lucide-react';
+import { VoiceAssistant } from './components/VoiceAssistant';
 import { generatePlan, executeMission, implementFeatures, AgentPlan, FeatureImplementation } from './services/agentService';
 import { jsPDF } from 'jspdf';
 import ReactMarkdown from 'react-markdown';
@@ -37,12 +47,12 @@ function cn(...inputs: ClassValue[]) {
 }
 
 const CAPABILITIES = [
-  { icon: Workflow, label: "Autonomous Mission Planning", count: 100, status: "READY" },
+  { icon: Monitor, label: "Desktop Management", count: 1, status: "ACTIVE" },
+  { icon: Mic, label: "Voice Interface", count: 1, status: "ACTIVE" },
+  { icon: HardDrive, label: "System Reorganization", count: 1, status: "READY" },
+  { icon: Shield, label: "Secure Permissions", count: 1, status: "ACTIVE" },
   { icon: BrainCircuit, label: "Multi-Domain Intelligence", count: 500, status: "READY" },
-  { icon: BarChart3, label: "Deep Data Synthesis", count: 1, status: "READY" },
-  { icon: Shield, label: "Security & Integrity Engine", count: 1, status: "READY" },
-  { icon: FileJson, label: "Structured Asset Output", count: 1, status: "READY" },
-  { icon: Download, label: "Intelligence Report Engine", count: 1, status: "READY" },
+  { icon: Workflow, label: "Autonomous Mission Planning", count: 100, status: "READY" },
 ];
 
 const SYSTEM_METRICS = [
@@ -62,20 +72,22 @@ const PIPELINE_STEPS = [
 ];
 
 const FEATURE_LIST = [
-  "Web Extraction Engine",
-  "Code Generation Core",
-  "Semantic Analysis Layer",
-  "Desktop Automation Interface",
+  "Autonomous Desktop Sorting & Organization",
+  "Real-time Voice Command Interface",
+  "System-wide File Access & Modification",
+  "Multi-Agent Intelligence Extraction",
+  "Automated Web Research & Synthesis",
+  "Secure Local Agent Connectivity",
+  "Encrypted Data Storage & Retention",
+  "High-Precision PDF Report Generation",
+  "Semantic File Clustering Logic",
+  "Real-time System Metrics Monitoring",
   "Neural Synthesis Module",
-  "Integrity Verification Protocol",
-  "Multi-API Routing Logic",
-  "Recursive Refinement Loop",
-  "High-Precision Data Mapping",
-  "Autonomous Error Correction"
+  "Integrity Verification Protocol"
 ];
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<'home' | 'results' | 'files' | 'api-keys'>('home');
+  const [activeTab, setActiveTab] = useState<'home' | 'results' | 'files' | 'api-keys' | 'desktop'>('home');
   const [apiKeys, setApiKeys] = useState<{
     id: string;
     provider: string;
@@ -100,6 +112,23 @@ export default function App() {
   const [executingStep, setExecutingStep] = useState<number | null>(null);
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
   const [logs, setLogs] = useState<string[]>(["SYSTEM: Video Intelligence Agent Ready."]);
+  
+  // Desktop Simulation State
+  const [desktopFiles, setDesktopFiles] = useState<{ name: string; type: string; size: string; category?: string }[]>([
+    { name: "invoice_2023.pdf", type: "pdf", size: "1.2MB" },
+    { name: "vacation_photo.jpg", type: "image", size: "4.5MB" },
+    { name: "script_v1.py", type: "code", size: "12KB" },
+    { name: "meeting_notes.docx", type: "document", size: "45KB" },
+    { name: "profile_pic.png", type: "image", size: "2.1MB" },
+    { name: "data_dump.csv", type: "data", size: "15MB" },
+    { name: "main.tsx", type: "code", size: "8KB" },
+    { name: "budget_q1.xlsx", type: "spreadsheet", size: "89KB" },
+  ]);
+  const [isSortingDesktop, setIsSortingDesktop] = useState(false);
+  const [sortedDesktop, setSortedDesktop] = useState<{ [key: string]: typeof desktopFiles } | null>(null);
+  const [hasSystemPermissions, setHasSystemPermissions] = useState(false);
+  const [isVoiceActive, setIsVoiceActive] = useState(false);
+  const [baseGoal, setBaseGoal] = useState('');
   const logEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -108,6 +137,37 @@ export default function App() {
 
   const addLog = (msg: string) => {
     setLogs(prev => [...prev, `[${new Date().toLocaleTimeString()}] ${msg}`]);
+  };
+
+  const handleSortDesktop = async () => {
+    setIsSortingDesktop(true);
+    addLog("INITIALIZING DESKTOP SCAN...");
+    
+    // Simulate scan
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    addLog(`SCAN COMPLETE: ${desktopFiles.length} FILES DETECTED.`);
+    
+    addLog("ANALYZING FILE METADATA AND SEMANTIC CONTEXT...");
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    
+    const sorted: { [key: string]: typeof desktopFiles } = {};
+    desktopFiles.forEach(file => {
+      let category = "Miscellaneous";
+      if (file.type === 'image') category = "Media/Images";
+      if (file.type === 'pdf' || file.type === 'document') category = "Documents";
+      if (file.type === 'code') category = "Development/Source";
+      if (file.type === 'spreadsheet' || file.type === 'data') category = "Data/Finance";
+      
+      if (!sorted[category]) sorted[category] = [];
+      sorted[category].push({ ...file, category });
+    });
+    
+    addLog("GENERATING OPTIMAL DIRECTORY STRUCTURE...");
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    setSortedDesktop(sorted);
+    setIsSortingDesktop(false);
+    addLog("DESKTOP SORTING COMPLETE. VIRTUAL MAPPING GENERATED.");
   };
 
   const handleAddKey = async () => {
@@ -151,9 +211,25 @@ export default function App() {
     setApiKeys(prev => prev.filter(k => k.id !== id));
   };
 
-  const handleExecute = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!goal.trim()) return;
+  const handleExecute = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!goal.trim() || isPlanning || isExecuting) return;
+
+    // Check for Desktop Sorting Command
+    const isDesktopSort = goal.toLowerCase().includes('sort') && (goal.toLowerCase().includes('desktop') || goal.toLowerCase().includes('document'));
+    
+    if (isDesktopSort) {
+      if (!hasSystemPermissions) {
+        addLog("SYSTEM ALERT: DESKTOP ACCESS PERMISSION REQUIRED.");
+        setActiveTab('desktop');
+        return;
+      }
+      
+      addLog("MISSION DETECTED: AUTONOMOUS DESKTOP REORGANIZATION.");
+      setActiveTab('desktop');
+      await handleSortDesktop();
+      return;
+    }
 
     setIsPlanning(true);
     setPlan(null);
@@ -399,7 +475,44 @@ export default function App() {
             </div>
           </div>
         </div>
-        <div className="flex gap-4 md:gap-8">
+        <div className="flex items-center gap-6">
+          <VoiceAssistant 
+            apiKey={apiKeys.find(k => k.provider === 'Gemini')?.key || process.env.GEMINI_API_KEY || ''} 
+            onSessionStart={() => {
+              setBaseGoal(goal);
+              setIsVoiceActive(true);
+              addLog("VOICE INTERFACE INITIALIZED.");
+            }}
+            onSessionEnd={() => {
+              setIsVoiceActive(false);
+              addLog("VOICE INTERFACE DEACTIVATED.");
+            }}
+            onTranscription={(text) => {
+              // Append the current turn's transcription to the base goal
+              const updatedGoal = baseGoal ? `${baseGoal} ${text}` : text;
+              setGoal(updatedGoal);
+              
+              // Check for immediate commands in the current turn
+              const lowerText = text.toLowerCase();
+              if (lowerText.includes('execute') || lowerText.includes('start mission') || lowerText.includes('initiate')) {
+                // We don't want to trigger handleExecute on every partial, 
+                // but if the user says a clear command, we can.
+                // However, it's safer to wait for turn complete for commands.
+              }
+            }}
+            onTurnComplete={() => {
+              // Commit the current goal as the new base for the next turn
+              setBaseGoal(goal);
+              
+              // Check for commands at the end of a turn
+              const lowerGoal = goal.toLowerCase();
+              if (lowerGoal.includes('execute') || lowerGoal.includes('start mission') || lowerGoal.includes('sort my desktop')) {
+                addLog("VOICE COMMAND RECOGNIZED: INITIATING MISSION.");
+                setTimeout(() => handleExecute(), 500);
+              }
+            }}
+          />
+          <div className="flex gap-4 md:gap-8">
           <button 
             onClick={() => setActiveTab('home')}
             className={cn("text-[11px] uppercase tracking-widest transition-all pb-1 border-b-2", activeTab === 'home' ? "text-[#00FF00] border-[#00FF00]" : "text-white/30 border-transparent hover:text-white/60")}
@@ -424,8 +537,15 @@ export default function App() {
           >
             API Keys
           </button>
+          <button 
+            onClick={() => setActiveTab('desktop')}
+            className={cn("text-[11px] uppercase tracking-widest transition-all pb-1 border-b-2", activeTab === 'desktop' ? "text-[#00FF00] border-[#00FF00]" : "text-white/30 border-transparent hover:text-white/60")}
+          >
+            Desktop
+          </button>
         </div>
-      </header>
+      </div>
+    </header>
 
       <main className="max-w-7xl mx-auto p-6">
         <AnimatePresence mode="wait">
@@ -557,7 +677,10 @@ export default function App() {
                       value={goal}
                       onChange={(e) => setGoal(e.target.value)}
                       placeholder="Enter YouTube channel URL or video list..."
-                      className="w-full h-32 bg-black border border-[#333] p-4 text-sm focus:border-[#00FF00] outline-none transition-colors resize-none"
+                      className={cn(
+                        "w-full h-32 bg-black border p-4 text-sm outline-none transition-all resize-none",
+                        isVoiceActive ? "border-[#00FF00] shadow-[0_0_15px_rgba(0,255,0,0.1)]" : "border-[#333] focus:border-[#00FF00]"
+                      )}
                     />
                     <button
                       disabled={isPlanning || isExecuting}
@@ -1027,6 +1150,160 @@ export default function App() {
                         <span className="text-[#00FF00]">24H</span>
                       </div>
                     </div>
+                  </div>
+                </section>
+              </div>
+            </motion.div>
+          )}
+
+          {activeTab === 'desktop' && (
+            <motion.div 
+              key="desktop"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="grid grid-cols-1 lg:grid-cols-12 gap-6"
+            >
+              <div className="lg:col-span-8 space-y-6">
+                <section className="bg-[#111] border border-[#333] p-6 rounded-sm">
+                  <div className="flex items-center justify-between mb-8">
+                    <div className="flex items-center gap-2 text-[#00FF00]">
+                      <Monitor className="w-5 h-5" />
+                      <h2 className="text-sm font-bold uppercase tracking-widest">Desktop Management Interface</h2>
+                    </div>
+                    <button 
+                      onClick={handleSortDesktop}
+                      disabled={isSortingDesktop}
+                      className="bg-[#00FF00] text-black px-6 py-2 text-[10px] font-bold uppercase hover:bg-[#00CC00] disabled:opacity-50 flex items-center gap-2"
+                    >
+                      {isSortingDesktop ? <Loader2 className="w-3 h-3 animate-spin" /> : <Workflow className="w-3 h-3" />}
+                      {isSortingDesktop ? "Sorting..." : "Initiate Desktop Sort"}
+                    </button>
+                  </div>
+
+                  {!sortedDesktop ? (
+                    <div className="space-y-3">
+                      <div className="text-[10px] text-[#444] uppercase tracking-widest mb-4">Detected Unsorted Files (Virtual Scan)</div>
+                      {desktopFiles.map((file, i) => (
+                        <div key={i} className="bg-black border border-[#222] p-3 flex items-center justify-between group hover:border-[#00FF00]/30 transition-all">
+                          <div className="flex items-center gap-3">
+                            <File className="w-4 h-4 text-[#444]" />
+                            <span className="text-xs text-white/80">{file.name}</span>
+                          </div>
+                          <div className="flex items-center gap-4">
+                            <span className="text-[9px] text-[#444] uppercase">{file.type}</span>
+                            <span className="text-[9px] text-[#444]">{file.size}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="space-y-6">
+                      <div className="text-[10px] text-[#00FF00] uppercase tracking-widest mb-4">Optimized Directory Structure Generated</div>
+                      {Object.entries(sortedDesktop).map(([category, files]) => (
+                        <div key={category} className="space-y-2">
+                          <div className="flex items-center gap-2 text-[10px] text-white/40 uppercase tracking-widest pb-1 border-b border-[#222]">
+                            <Folder className="w-3 h-3" />
+                            {category} ({files.length} files)
+                          </div>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                            {files.map((file, i) => (
+                              <div key={i} className="bg-black/40 border border-[#222] p-2 flex items-center gap-3">
+                                <File className="w-3 h-3 text-[#00FF00]/40" />
+                                <span className="text-[11px] text-white/60">{file.name}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                      <button 
+                        onClick={() => setSortedDesktop(null)}
+                        className="text-[9px] text-[#444] uppercase hover:text-[#00FF00] transition-colors"
+                      >
+                        ← Reset Simulation
+                      </button>
+                    </div>
+                  )}
+                </section>
+
+                <section className="bg-[#111] border border-[#333] p-6 rounded-sm">
+                  <div className="flex items-center gap-2 mb-6 text-[#00FF00]">
+                    <Terminal className="w-4 h-4" />
+                    <h2 className="text-xs font-bold uppercase tracking-widest">Local Agent Connectivity</h2>
+                  </div>
+                  <div className="bg-black p-4 border border-[#222] rounded-sm">
+                    <p className="text-[11px] text-[#888] mb-4 leading-relaxed">
+                      To enable real-world desktop sorting, you must run the CORTEX Local Agent on your machine. This agent provides a secure bridge between this web interface and your local file system.
+                    </p>
+                    <div className="bg-[#0A0A0A] p-4 font-mono text-[10px] text-[#00FF00] border border-[#333] overflow-x-auto">
+                      <div className="mb-2 opacity-50"># Install CORTEX Local Agent</div>
+                      <div className="mb-4">npm install -g @cortex/local-agent</div>
+                      <div className="opacity-50"># Connect to this session</div>
+                      <div>cortex-agent connect --token=CTX-882-X92-P01 --path="~/Desktop"</div>
+                    </div>
+                    <div className="mt-4 flex items-center gap-2 text-[9px] text-[#444] uppercase">
+                      <Shield className="w-3 h-3" />
+                      End-to-End Encrypted Tunnel Active
+                    </div>
+                  </div>
+                </section>
+              </div>
+
+              <div className="lg:col-span-4 space-y-6">
+                <section className="bg-[#111] border border-[#333] p-6 rounded-sm">
+                  <div className="flex items-center gap-2 mb-6 text-[#00FF00]">
+                    <Lock className="w-4 h-4" />
+                    <h2 className="text-xs font-bold uppercase tracking-widest">System Permissions</h2>
+                  </div>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between p-3 bg-black border border-[#222] rounded-sm">
+                      <div>
+                        <div className="text-[10px] font-bold text-white uppercase">Desktop Access</div>
+                        <div className="text-[9px] text-[#444] uppercase">Read/Write Files</div>
+                      </div>
+                      <button 
+                        onClick={() => {
+                          setHasSystemPermissions(!hasSystemPermissions);
+                          addLog(hasSystemPermissions ? "DESKTOP ACCESS REVOKED." : "DESKTOP ACCESS GRANTED.");
+                        }}
+                        className={cn(
+                          "w-10 h-5 rounded-full relative transition-all duration-300",
+                          hasSystemPermissions ? "bg-[#00FF00]" : "bg-[#333]"
+                        )}
+                      >
+                        <div className={cn(
+                          "absolute top-1 w-3 h-3 bg-black rounded-full transition-all duration-300",
+                          hasSystemPermissions ? "left-6" : "left-1"
+                        )} />
+                      </button>
+                    </div>
+                    <div className="flex items-center justify-between p-3 bg-black border border-[#222] rounded-sm opacity-50">
+                      <div>
+                        <div className="text-[10px] font-bold text-white uppercase">Documents Access</div>
+                        <div className="text-[9px] text-[#444] uppercase">Read/Write Files</div>
+                      </div>
+                      <Unlock className="w-4 h-4 text-[#444]" />
+                    </div>
+                    <p className="text-[9px] text-[#444] leading-relaxed italic">
+                      * Granting permissions allows CORTEX to modify files on your local system via the connected agent.
+                    </p>
+                  </div>
+                </section>
+
+                <section className="bg-[#111] border border-[#333] p-6 rounded-sm">
+                  <div className="flex items-center gap-2 mb-4 text-[#00FF00]">
+                    <Activity className="w-4 h-4" />
+                    <h2 className="text-xs font-bold uppercase tracking-widest">Automation Logs</h2>
+                  </div>
+                  <div className="h-48 overflow-y-auto space-y-2 font-mono text-[9px]">
+                    {logs.filter(l => l.includes("DESKTOP") || l.includes("SCAN")).map((log, i) => (
+                      <div key={i} className="text-[#666] border-l border-[#333] pl-2 py-1">
+                        {log}
+                      </div>
+                    ))}
+                    {logs.filter(l => l.includes("DESKTOP") || l.includes("SCAN")).length === 0 && (
+                      <div className="text-[#333] italic">No desktop activity logged.</div>
+                    )}
                   </div>
                 </section>
               </div>
