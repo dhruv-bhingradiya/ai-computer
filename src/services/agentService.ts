@@ -1,6 +1,4 @@
-import { GoogleGenAI, Type } from "@google/genai";
-
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
+import { GoogleGenAI, Type, GenerateContentResponse } from "@google/genai";
 
 export interface PlanStep {
   id: number;
@@ -24,9 +22,12 @@ export interface FeatureImplementation {
   expected_output: string;
 }
 
-export async function generatePlan(goal: string): Promise<AgentPlan> {
+const getAI = (apiKey: string) => new GoogleGenAI({ apiKey });
+
+export async function generatePlan(goal: string, apiKey: string, model: string = "gemini-3-flash-preview"): Promise<AgentPlan> {
+  const ai = getAI(apiKey);
   const response = await ai.models.generateContent({
-    model: "gemini-3-flash-preview",
+    model,
     contents: `Goal: ${goal}`,
     config: {
       systemInstruction: `You are a High-Precision Autonomous AI Agent for multi-video intelligence extraction. 
@@ -74,9 +75,10 @@ export async function generatePlan(goal: string): Promise<AgentPlan> {
   return JSON.parse(text) as AgentPlan;
 }
 
-export async function implementFeatures(goal: string, features: string[]): Promise<FeatureImplementation[]> {
+export async function implementFeatures(goal: string, features: string[], apiKey: string, model: string = "gemini-3-flash-preview"): Promise<FeatureImplementation[]> {
+  const ai = getAI(apiKey);
   const response = await ai.models.generateContent({
-    model: "gemini-3-flash-preview",
+    model,
     contents: `Goal: ${goal}\nFeatures to implement: ${features.join(', ')}`,
     config: {
       systemInstruction: `You are a High-Precision AI System Architect. 
@@ -112,9 +114,10 @@ export async function implementFeatures(goal: string, features: string[]): Promi
   return JSON.parse(text) as FeatureImplementation[];
 }
 
-export async function executeMission(goal: string, plan: AgentPlan): Promise<string> {
+export async function executeMission(goal: string, plan: AgentPlan, apiKey: string, model: string = "gemini-3-flash-preview"): Promise<string> {
+  const ai = getAI(apiKey);
   const response = await ai.models.generateContent({
-    model: "gemini-3-flash-preview",
+    model,
     contents: `Mission Goal: ${goal}\n\nPlan:\n${plan.plan.map(s => `${s.id}. ${s.title}: ${s.action}`).join('\n')}`,
     config: {
       systemInstruction: `You are a High-Precision Execution System. 
@@ -144,8 +147,8 @@ export async function executeMission(goal: string, plan: AgentPlan): Promise<str
       }
       
       RULES:
-      - ANALYZE ALL 10 VIDEOS.
-      - RANK TOP 50 TOOLS.
+      - ANALYZE ALL RELEVANT VIDEOS FROM THE SOURCE.
+      - RANK TOOLS/ITEMS ACCORDING TO THE SCALE REQUESTED IN THE GOAL (e.g. if goal asks for top 100, rank 100).
       - NO HALLUCINATIONS.
       - JSON ONLY.`,
       responseMimeType: "application/json"
