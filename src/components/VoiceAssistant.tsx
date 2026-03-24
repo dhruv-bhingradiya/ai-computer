@@ -154,10 +154,27 @@ export const VoiceAssistant: React.FC<VoiceAssistantProps> = ({ apiKey, onTransc
   const stopSession = () => {
     setIsActive(false);
     setIsConnecting(false);
-    sessionRef.current?.close();
-    streamRef.current?.getTracks().forEach(track => track.stop());
-    processorRef.current?.disconnect();
-    audioContextRef.current?.close();
+    
+    if (sessionRef.current) {
+      sessionRef.current.close();
+      sessionRef.current = null;
+    }
+
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
+    }
+
+    if (processorRef.current) {
+      processorRef.current.disconnect();
+      processorRef.current = null;
+    }
+
+    if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
+      audioContextRef.current.close();
+      audioContextRef.current = null;
+    }
+
     audioQueue.current = [];
     isPlaying.current = false;
     onSessionEnd?.();
