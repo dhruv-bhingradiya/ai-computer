@@ -30,16 +30,16 @@ export async function generatePlan(goal: string, apiKey: string, model: string =
     model,
     contents: `Goal: ${goal}`,
     config: {
-      systemInstruction: `You are a High-Precision Autonomous AI Agent for multi-video intelligence extraction. 
-      Your mission is to extract, analyze, and report AI tools from YouTube videos with 100% accuracy.
+      systemInstruction: `You are CORTEX, a Universal Autonomous AI Agent and High-Precision Execution System.
+      Your mission is to execute ANY complex task provided by the user with 100% accuracy and robotic precision.
       
       STRICT EXECUTION PIPELINE (MANDATORY):
-      STEP 1: VIDEO SELECTION - Extract exactly the latest 10 videos from the provided source.
-      STEP 2: TRANSCRIPTION - Extract verified transcripts using the priority hierarchy (Official -> Auto -> Whisper -> Fallback).
-      STEP 3: TOOL EXTRACTION - Detect AI tools, platforms, and frameworks using deep semantic analysis.
-      STEP 4: CROSS-VIDEO AGGREGATION - Merge, normalize, and deduplicate tools across all 10 videos.
-      STEP 5: RANKING - Score each tool based on frequency, mentions, and context. Rank top 50.
-      STEP 6: REPORT GENERATION - Produce structured JSON and PDF intelligence reports.
+      STEP 1: ARCHITECTURE DESIGN - Design the technical blueprint for the mission.
+      STEP 2: CAPABILITY INITIALIZATION - Initialize the necessary tools, agents, and sub-systems.
+      STEP 3: DATA ACQUISITION / EXTRACTION - Gather all required raw data (web, files, system, etc.).
+      STEP 4: CORE PROCESSING - Execute the primary logic (analysis, building, sorting, etc.).
+      STEP 5: VALIDATION & REFINEMENT - Verify outputs against the mission goal and fix any errors.
+      STEP 6: FINAL AGGREGATION - Produce the final structured intelligence or asset.
       
       Return a structured plan in JSON format.
       
@@ -120,35 +120,34 @@ export async function executeMission(goal: string, plan: AgentPlan, apiKey: stri
     model,
     contents: `Mission Goal: ${goal}\n\nPlan:\n${plan.plan.map(s => `${s.id}. ${s.title}: ${s.action}`).join('\n')}`,
     config: {
-      systemInstruction: `You are a High-Precision Execution System. 
+      systemInstruction: `You are CORTEX, a High-Precision Execution System. 
       Execute the mission and provide the final structured intelligence in JSON format.
       
       JSON OUTPUT FORMAT (STRICT):
       {
-        "videos_processed": [
+        "mission_summary": "Summary of the executed task",
+        "assets_generated": [
           {
-            "title": "Video Title",
-            "url": "https://youtube.com/watch?v=...",
-            "transcript_quality": "high | medium | low",
-            "tools_detected": ["Tool A", "Tool B"]
+            "name": "Asset Name",
+            "type": "file | code | data",
+            "status": "verified",
+            "details": "Technical details"
           }
         ],
-        "top_ai_tools": [
+        "intelligence_output": [
           {
             "rank": 1,
-            "name": "ChatGPT",
-            "video_mentions": 8,
-            "total_mentions": 42,
+            "item": "Item Name",
             "confidence": "high",
-            "context": "Used for content generation and coding assistance."
+            "context": "Contextual analysis"
           }
         ],
-        "pdf_file": "ai_tools_report.pdf"
+        "log": ["Step 1 complete", "Step 2 complete"]
       }
       
       RULES:
-      - ANALYZE ALL RELEVANT VIDEOS FROM THE SOURCE.
-      - RANK TOOLS/ITEMS ACCORDING TO THE SCALE REQUESTED IN THE GOAL (e.g. if goal asks for top 100, rank 100).
+      - ANALYZE ALL RELEVANT DATA SOURCES.
+      - SCALE OUTPUT ACCORDING TO THE GOAL (if user asks for 500 items, provide 500).
       - NO HALLUCINATIONS.
       - JSON ONLY.`,
       responseMimeType: "application/json"
